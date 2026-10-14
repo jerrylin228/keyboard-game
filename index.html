@@ -212,7 +212,6 @@
             flex-wrap: wrap;
         }
 
-        /* 移除圖示後的純文字按鈕樣式 */
         .btn-spin {
             background: linear-gradient(135deg, #f97316, #ea580c);
             color: #ffffff;
@@ -279,13 +278,9 @@
             line-height: 1;
         }
 
-        .pill-mark.correct {
-            color: #22c55e;
-        }
-
-        .pill-mark.incorrect {
-            color: #ef4444;
-        }
+        .pill-mark.correct { color: #22c55e; }
+        .pill-mark.incorrect { color: #ef4444; }
+        .pill-mark.blind { color: #94a3b8; }
 
         .pill {
             min-width: 32px;
@@ -319,6 +314,12 @@
         .pill.incorrect {
             border-color: #ef4444 !important;
             box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+        }
+
+        .pill.blind {
+            border-color: #64748b !important;
+            background: #334155 !important;
+            box-shadow: 0 0 6px rgba(100, 116, 139, 0.3);
         }
 
         .row-bottom {
@@ -624,7 +625,6 @@
         <!-- 右邊：按鈕與進度 -->
         <div class="control-panel">
             <div class="row-top">
-                <!-- 按鈕內圖示已刪除 -->
                 <button class="btn-spin" onclick="spinSlot()">點我出題</button>
                 <button class="btn-demo" onclick="playDemo()">點我聽聽看</button>
 
@@ -745,8 +745,8 @@
     let level2ScalePool = [];
 
     let currentLevel = 1;
-    let level1Combo = 0;
-    let level2Combo = 0;
+    let level1Combo = 0; // 第一關連續答對題數 (目標 5 題)
+    let level2Combo = 0; // 第二關連續答對題數 (目標 5 題)
 
     let audioCtx = null;
     let targetNotes = [];
@@ -1017,6 +1017,9 @@
 
     function updateProgressUI() {
         const maxLen = currentLevel === 1 ? 4 : 8;
+        const currentComboCount = (currentLevel === 1) ? level1Combo : level2Combo;
+        const isBlindMode = currentComboCount >= 3; // 第 4、5 題 (已連對 3 題以上) 啟用盲測模式
+
         for (let i = 1; i <= maxLen; i++) {
             const pill = document.getElementById(`p${i}`);
             const mark = document.getElementById(`pm${i}`);
@@ -1028,20 +1031,28 @@
                     pill.innerText = noteObj ? noteObj.display : '♪';
                     pill.classList.remove('empty');
 
-                    const isCorrect = userVal === targetNotes[i - 1];
-                    if (isCorrect) {
-                        pill.classList.add('correct');
-                        pill.classList.remove('incorrect');
+                    if (isBlindMode) {
+                        // 第 4-5 題：灰色方框，上方顯示 ?
+                        pill.className = 'pill blind';
                         if (mark) {
-                            mark.innerText = 'O';
-                            mark.className = 'pill-mark correct';
+                            mark.innerText = '?';
+                            mark.className = 'pill-mark blind';
                         }
                     } else {
-                        pill.classList.add('incorrect');
-                        pill.classList.remove('correct');
-                        if (mark) {
-                            mark.innerText = 'X';
-                            mark.className = 'pill-mark incorrect';
+                        // 前 3 題：即時判定 O / X 與綠/紅框
+                        const isCorrect = userVal === targetNotes[i - 1];
+                        if (isCorrect) {
+                            pill.className = 'pill correct';
+                            if (mark) {
+                                mark.innerText = 'O';
+                                mark.className = 'pill-mark correct';
+                            }
+                        } else {
+                            pill.className = 'pill incorrect';
+                            if (mark) {
+                                mark.innerText = 'X';
+                                mark.className = 'pill-mark incorrect';
+                            }
                         }
                     }
                 } else {
@@ -1105,7 +1116,9 @@
                 currentL1Params = { rootLetter: r, s1, s2, s3 };
                 calcLevel1AnswerDefault(r, s1, s2, s3);
                 clearInput();
-                document.getElementById('statusText').innerText = "請在鍵盤上按順序彈奏 4 個音";
+                
+                const qNum = level1Combo + 1;
+                document.getElementById('statusText').innerText = `[第 ${qNum}/5 題] 請在鍵盤上按順序彈奏 4 個音`;
                 document.getElementById('statusText').style.color = "#38bdf8";
                 isSpinning = false;
             }
@@ -1133,7 +1146,8 @@
                 clearInput();
 
                 const rootName = chosen.name.replace('大調', '');
-                currentQuestionText = `請以 ${rootName} 音開始，彈奏 ${chosen.name}音階，<br>音程排列依序為：<span class="whole-step">全</span><span class="whole-step">全</span><span class="half-step">半</span><span class="whole-step">全</span><span class="whole-step">全</span><span class="whole-step">全</span><span class="half-step">半</span>`;
+                const qNum = level2Combo + 1;
+                currentQuestionText = `[第 ${qNum}/5 題] 請以 ${rootName} 音開始，彈奏 ${chosen.name}音階，<br>音程排列依序為：<span class="whole-step">全</span><span class="whole-step">全</span><span class="half-step">半</span><span class="whole-step">全</span><span class="whole-step">全</span><span class="whole-step">全</span><span class="half-step">半</span>`;
                 
                 const statusEl = document.getElementById('statusText');
                 statusEl.innerHTML = currentQuestionText;
@@ -1180,6 +1194,29 @@
     function checkAnswer() {
         const isRight = userInput.every((val, idx) => val === targetNotes[idx]);
         const statusEl = document.getElementById('statusText');
+        const maxLen = currentLevel === 1 ? 4 : 8;
+
+        // 若為第 4、5 題，提交答案時進行最終真實的 O / X 與紅綠框呈現
+        for (let i = 1; i <= maxLen; i++) {
+            const pill = document.getElementById(`p${i}`);
+            const mark = document.getElementById(`pm${i}`);
+            if (pill && userInput[i - 1]) {
+                const isCorrect = userInput[i - 1] === targetNotes[i - 1];
+                if (isCorrect) {
+                    pill.className = 'pill correct';
+                    if (mark) {
+                        mark.innerText = 'O';
+                        mark.className = 'pill-mark correct';
+                    }
+                } else {
+                    pill.className = 'pill incorrect';
+                    if (mark) {
+                        mark.innerText = 'X';
+                        mark.className = 'pill-mark incorrect';
+                    }
+                }
+            }
+        }
 
         if (isRight) {
             score += 100 + combo * 20;
@@ -1199,11 +1236,11 @@
                 }
             } else {
                 level2Combo++;
-                if (level2Combo >= 3) {
+                if (level2Combo >= 5) {
                     setTimeout(() => {
                         showModal(
                             "👑 鍵盤之王！", 
-                            "恭喜你，成為了鍵盤之王！成功挑戰全部大調音階！<br><span style='color: #fbbf24; font-weight: 800;'>請舉手通知老師登記加分！</span>", 
+                            "恭喜你，成為了鍵盤之王！成功挑戰全部 5 題大調音階！<br><span style='color: #fbbf24; font-weight: 800;'>請舉手通知老師登記加分！</span>", 
                             "重新體驗 ➔", 
                             resetGame
                         );
@@ -1229,7 +1266,8 @@
         const statusEl = document.getElementById('statusText');
         if (targetNotes.length > 0 && !statusEl.classList.contains('bounce')) {
             if (currentLevel === 1) {
-                statusEl.innerText = "請在鍵盤上按順序彈奏 4 個音";
+                const qNum = level1Combo + 1;
+                statusEl.innerText = `[第 ${qNum}/5 題] 請在鍵盤上按順序彈奏 4 個音`;
             } else {
                 statusEl.innerHTML = currentQuestionText;
             }
@@ -1255,6 +1293,7 @@
 
     function switchLevel2() {
         currentLevel = 2;
+        level2Combo = 0;
         currentL1Params = null;
         document.getElementById('gameTitle').innerText = "鍵盤音程練習：大調音階 (第二關)";
         document.getElementById('gameSubtitle').innerText = "掌握全全半全全全半，成為鍵盤大師！";
