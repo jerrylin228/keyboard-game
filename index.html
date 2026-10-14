@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>鍵盤音程練習：全音與半音</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0b0f19;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .game-card {
+            width: 100%;
+            max-width: 1080px;
+            background: #101625;
+            border-radius: 20px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border: 1px solid #1e293b;
+            position: relative;
+        }
+
+        /* 頂部標題區 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #172033;
+            padding: 14px 20px;
+            border-radius: 14px;
+            border: 1px solid #23314d;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .icon-box {
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, #6366f1, #3b82f6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .title-text h1 {
+            font-size: 1.35rem;
+            color: #38bdf8;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .title-text p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge-box {
+            background: #0d1322;
+            padding: 6px 14px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #1e293b;
+            min-width: 68px;
+        }
+
+        .badge-label {
+            font-size: 0.65rem;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .badge-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fbbf24;
+        }
+
+        .btn-toggle {
+            background: #4f46e5;
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        /* 中間控制區 */
+        .middle-section {
+            display: grid;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .slot-container {
+            background: #172033;
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid #23314d;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slot-grid-level1 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .slot-grid-level2 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .slot-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .slot-tag {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .slot-box {
+            width: 100%;
+            height: 68px;
+            background: #0b0f19;
+            border-radius: 10px;
+            border: 2px solid #2d3d5e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: #38bdf8;
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.7);
+            transition: transform 0.1s ease;
+        }
+
+        .slot-box.spinning {
+            animation: slotSpin 0.08s infinite alternate ease-in-out;
+            color: #fbbf24;
+            filter: blur(0.5px);
+            border-color: #f97316;
+        }
+
+        @keyframes slotSpin {
+            0% { transform: translateY(-4px) scale(1.03); }
+            100% { transform: translateY(4px) scale(0.97); }
+        }
+
+        .control-panel {
+            background: #172033;
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid #23314d;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .row-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* 移除圖示後的純文字按鈕樣式 */
+        .btn-spin {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-demo {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .progress-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: 700;
+        }
+
+        .pill-container {
+            display: flex;
+            gap: 6px;
+            align-items: flex-end;
+            padding-top: 14px;
+        }
+
+        .pill-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pill-mark {
+            position: absolute;
+            top: -16px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .pill-mark.correct {
+            color: #22c55e;
+        }
+
+        .pill-mark.incorrect {
+            color: #ef4444;
+        }
+
+        .pill {
+            min-width: 32px;
+            height: 30px;
+            padding: 0 4px;
+            background: #0284c7;
+            color: #ffffff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+            border: 2px solid transparent;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .pill.empty {
+            background: #0d1322;
+            color: #475569;
+            border: 1px solid #1e293b;
+            box-shadow: none;
+        }
+
+        .pill.correct {
+            border-color: #22c55e !important;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+        }
+
+        .pill.incorrect {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+        }
+
+        .row-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .status-badge {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #38bdf8;
+            display: inline-block;
+            line-height: 1.45;
+        }
+
+        .status-badge .whole-step {
+            color: #ef4444;
+            font-weight: 900;
+        }
+
+        .status-badge .half-step {
+            color: #22c55e;
+            font-weight: 900;
+        }
+
+        .status-badge.bounce {
+            animation: celebrateBounce 0.5s ease infinite alternate;
+            color: #4ade80 !important;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+
+        @keyframes celebrateBounce {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-6px) scale(1.05); }
+        }
+
+        .btn-clear {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* 鋼琴鍵盤區 */
+        .keyboard-wrapper {
+            background: #172033;
+            border-radius: 16px;
+            padding: 16px 12px 12px 12px;
+            border: 1px solid #23314d;
+            overflow-x: auto;
+        }
+
+        .keyboard {
+            position: relative;
+            display: flex;
+            height: 200px;
+            width: 100%;
+            min-width: 650px;
+            margin: 0 auto;
+        }
+
+        .keyboard.level2 {
+            min-width: 850px;
+        }
+
+        .white-key, .black-key {
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        .white-key {
+            flex: 1;
+            background: linear-gradient(to bottom, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #cbd5e1;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 12px;
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: #1e293b;
+            box-shadow: inset 0 -6px 12px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .white-key:active, .white-key.active {
+            background: #cbd5e1 !important;
+            transform: translateY(2px);
+            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.15);
+        }
+
+        .black-key {
+            position: absolute;
+            height: 60%;
+            background: linear-gradient(to bottom, #334155 0%, #0f172a 100%);
+            border-radius: 0 0 6px 6px;
+            z-index: 2;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 10px;
+            color: #38bdf8;
+            font-weight: 800;
+            text-align: center;
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.6);
+        }
+
+        .black-key:active, .black-key.active {
+            background: #1e293b !important;
+            transform: translateY(2px);
+            box-shadow: 1px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .black-key .key-text-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .black-key .note-line-1 {
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            line-height: 1;
+        }
+
+        .black-key .note-line-2 {
+            font-size: 0.8rem;
+            line-height: 1;
+        }
+
+        .black-key sup, .white-key sup {
+            font-size: 0.72em;
+            vertical-align: super;
+            line-height: 0;
+            font-weight: 800;
+        }
+
+        .dummy-key-right {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 60%;
+            background: linear-gradient(to bottom, #334155 0%, #0f172a 100%);
+            border-radius: 0 0 0 6px;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        .dummy-key-left {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 60%;
+            background: linear-gradient(to bottom, #334155 0%, #0f172a 100%);
+            border-radius: 0 0 6px 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        .hide-notes .key-text-container,
+        .hide-notes .key-text {
+            display: none !important;
+        }
+
+        /* 通關/晉級彈窗 */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.88);
+            backdrop-filter: blur(6px);
+            border-radius: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(251, 191, 36, 0.3);
+            text-align: center;
+        }
+
+        .modal-sub {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+
+        .btn-modal {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #ffffff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .middle-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-card" id="gameCard">
+    <!-- 通關/晉級彈窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-title" id="modalTitle">🎉 恭喜通關！</div>
+        <div class="modal-sub" id="modalSub">你已連續答對 5 題！準備好進入第二關的大調音階挑戰了嗎？</div>
+        <button class="btn-modal" id="modalBtn" onclick="closeModal()">進入第二關 ➔</button>
+    </div>
+
+    <!-- 1. 頂部標題區 -->
+    <div class="header">
+        <div class="title-group">
+            <div class="icon-box">🎵</div>
+            <div class="title-text">
+                <h1 id="gameTitle">鍵盤音程練習：全音與半音 (第一關)</h1>
+                <p id="gameSubtitle">全全半全全全半老師你在念經喔?</p>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="badge-box">
+                <div class="badge-label">SCORE</div>
+                <div class="badge-value" id="score">0</div>
+            </div>
+            <div class="badge-box">
+                <div class="badge-label">COMBO</div>
+                <div class="badge-value" id="combo">0</div>
+            </div>
+            <button class="btn-toggle" id="toggleBtn" onclick="toggleNotes()">隱藏音名</button>
+        </div>
+    </div>
+
+    <!-- 2. 中間對齊區 -->
+    <div class="middle-section">
+        <!-- 左邊：拉霸機 -->
+        <div class="slot-container">
+            <div class="slot-grid-level1" id="slotGrid">
+                <div class="slot-item">
+                    <span class="slot-tag">第 1 音</span>
+                    <div class="slot-box" id="s1">-</div>
+                </div>
+                <div class="slot-item">
+                    <span class="slot-tag">第 2 音</span>
+                    <div class="slot-box" id="s2">-</div>
+                </div>
+                <div class="slot-item">
+                    <span class="slot-tag">第 3 音</span>
+                    <div class="slot-box" id="s3">-</div>
+                </div>
+                <div class="slot-item">
+                    <span class="slot-tag">第 4 音</span>
+                    <div class="slot-box" id="s4">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右邊：按鈕與進度 -->
+        <div class="control-panel">
+            <div class="row-top">
+                <!-- 按鈕內圖示已刪除 -->
+                <button class="btn-spin" onclick="spinSlot()">點我出題</button>
+                <button class="btn-demo" onclick="playDemo()">點我聽聽看</button>
+
+                <div class="progress-group">
+                    <span class="progress-label">彈奏進度：</span>
+                    <div class="pill-container" id="pillContainer">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row-bottom">
+                <div class="status-badge" id="statusText">請先點選「點我出題」</div>
+                <button class="btn-clear" onclick="clearInput()">↺ 清除重新輸入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 下方鋼琴區 -->
+    <div class="keyboard-wrapper">
+        <div class="keyboard" id="keyboard">
+        </div>
+    </div>
+</div>
+
+<script>
+    const WHITE_KEYS_L1 = [
+        { name: 'C4', label: 'C<sup>4</sup>', freq: 261.63 },
+        { name: 'D4', label: 'D<sup>4</sup>', freq: 293.66 },
+        { name: 'E4', label: 'E<sup>4</sup>', freq: 329.63 },
+        { name: 'F4', label: 'F<sup>4</sup>', freq: 349.23 },
+        { name: 'G4', label: 'G<sup>4</sup>', freq: 392.00 },
+        { name: 'A4', label: 'A<sup>4</sup>', freq: 440.00 },
+        { name: 'B4', label: 'B<sup>4</sup>', freq: 493.88 },
+        { name: 'C5', label: 'C<sup>5</sup>', freq: 523.25 },
+        { name: 'D5', label: 'D<sup>5</sup>', freq: 587.33 },
+        { name: 'E5', label: 'E<sup>5</sup>', freq: 659.25 }
+    ];
+
+    const BLACK_KEYS_L1 = [
+        { name: 'C#4', label: '<div class="key-text-container"><div class="note-line-1">C<sup>♯4</sup></div><div class="note-line-2">D<sup>♭4</sup></div></div>', freq: 277.18, stepIndex: 1 },
+        { name: 'D#4', label: '<div class="key-text-container"><div class="note-line-1">D<sup>♯4</sup></div><div class="note-line-2">E<sup>♭4</sup></div></div>', freq: 311.13, stepIndex: 2 },
+        { name: 'F#4', label: '<div class="key-text-container"><div class="note-line-1">F<sup>♯4</sup></div><div class="note-line-2">G<sup>♭4</sup></div></div>', freq: 369.99, stepIndex: 4 },
+        { name: 'G#4', label: '<div class="key-text-container"><div class="note-line-1">G<sup>♯4</sup></div><div class="note-line-2">A<sup>♭4</sup></div></div>', freq: 415.30, stepIndex: 5 },
+        { name: 'A#4', label: '<div class="key-text-container"><div class="note-line-1">A<sup>♯4</sup></div><div class="note-line-2">B<sup>♭4</sup></div></div>', freq: 466.16, stepIndex: 6 },
+        { name: 'C#5', label: '<div class="key-text-container"><div class="note-line-1">C<sup>♯5</sup></div><div class="note-line-2">D<sup>♭5</sup></div></div>', freq: 554.37, stepIndex: 8 },
+        { name: 'D#5', label: '<div class="key-text-container"><div class="note-line-1">D<sup>♯5</sup></div><div class="note-line-2">E<sup>♭5</sup></div></div>', freq: 622.25, stepIndex: 9 }
+    ];
+
+    const WHITE_KEYS_L2 = [
+        { name: 'A3', label: 'A<sup>3</sup>', freq: 220.00 },
+        { name: 'B3', label: 'B<sup>3</sup>', freq: 246.94 },
+        { name: 'C4', label: 'C<sup>4</sup>', freq: 261.63 },
+        { name: 'D4', label: 'D<sup>4</sup>', freq: 293.66 },
+        { name: 'E4', label: 'E<sup>4</sup>', freq: 329.63 },
+        { name: 'F4', label: 'F<sup>4</sup>', freq: 349.23 },
+        { name: 'G4', label: 'G<sup>4</sup>', freq: 392.00 },
+        { name: 'A4', label: 'A<sup>4</sup>', freq: 440.00 },
+        { name: 'B4', label: 'B<sup>4</sup>', freq: 493.88 },
+        { name: 'C5', label: 'C<sup>5</sup>', freq: 523.25 },
+        { name: 'D5', label: 'D<sup>5</sup>', freq: 587.33 },
+        { name: 'E5', label: 'E<sup>5</sup>', freq: 659.25 },
+        { name: 'F5', label: 'F<sup>5</sup>', freq: 698.46 },
+        { name: 'G5', label: 'G<sup>5</sup>', freq: 783.99 }
+    ];
+
+    const BLACK_KEYS_L2 = [
+        { name: 'A#3', label: '<div class="key-text-container"><div class="note-line-1">A<sup>♯3</sup></div><div class="note-line-2">B<sup>♭3</sup></div></div>', freq: 233.08, stepIndex: 1 },
+        { name: 'C#4', label: '<div class="key-text-container"><div class="note-line-1">C<sup>♯4</sup></div><div class="note-line-2">D<sup>♭4</sup></div></div>', freq: 277.18, stepIndex: 3 },
+        { name: 'D#4', label: '<div class="key-text-container"><div class="note-line-1">D<sup>♯4</sup></div><div class="note-line-2">E<sup>♭4</sup></div></div>', freq: 311.13, stepIndex: 4 },
+        { name: 'F#4', label: '<div class="key-text-container"><div class="note-line-1">F<sup>♯4</sup></div><div class="note-line-2">G<sup>♭4</sup></div></div>', freq: 369.99, stepIndex: 6 },
+        { name: 'G#4', label: '<div class="key-text-container"><div class="note-line-1">G<sup>♯4</sup></div><div class="note-line-2">A<sup>♭4</sup></div></div>', freq: 415.30, stepIndex: 7 },
+        { name: 'A#4', label: '<div class="key-text-container"><div class="note-line-1">A<sup>♯4</sup></div><div class="note-line-2">B<sup>♭4</sup></div></div>', freq: 466.16, stepIndex: 8 },
+        { name: 'C#5', label: '<div class="key-text-container"><div class="note-line-1">C<sup>♯5</sup></div><div class="note-line-2">D<sup>♭5</sup></div></div>', freq: 554.37, stepIndex: 10 },
+        { name: 'D#5', label: '<div class="key-text-container"><div class="note-line-1">D<sup>♯5</sup></div><div class="note-line-2">E<sup>♭5</sup></div></div>', freq: 622.25, stepIndex: 11 },
+        { name: 'F#5', label: '<div class="key-text-container"><div class="note-line-1">F<sup>♯5</sup></div><div class="note-line-2">G<sup>♭5</sup></div></div>', freq: 739.99, stepIndex: 13 }
+    ];
+
+    const ALL_NOTES = [
+        { name: 'A3', freq: 220.00, display: 'A3' },
+        { name: 'A#3', freq: 233.08, display: 'A♯3' },
+        { name: 'B3', freq: 246.94, display: 'B3' },
+        { name: 'C4', freq: 261.63, display: 'C4' },
+        { name: 'C#4', freq: 277.18, display: 'C♯4' },
+        { name: 'D4', freq: 293.66, display: 'D4' },
+        { name: 'D#4', freq: 311.13, display: 'D♯4' },
+        { name: 'E4', freq: 329.63, display: 'E4' },
+        { name: 'F4', freq: 349.23, display: 'F4' },
+        { name: 'F#4', freq: 369.99, display: 'F♯4' },
+        { name: 'G4', freq: 392.00, display: 'G4' },
+        { name: 'G#4', freq: 415.30, display: 'G♯4' },
+        { name: 'A4', freq: 440.00, display: 'A4' },
+        { name: 'A#4', freq: 466.16, display: 'A♯4' },
+        { name: 'B4', freq: 493.88, display: 'B4' },
+        { name: 'C5', freq: 523.25, display: 'C5' },
+        { name: 'C#5', freq: 554.37, display: 'C♯5' },
+        { name: 'D5', freq: 587.33, display: 'D5' },
+        { name: 'D#5', freq: 622.25, display: 'D♯5' },
+        { name: 'E5', freq: 659.25, display: 'E5' },
+        { name: 'F5', freq: 698.46, display: 'F5' },
+        { name: 'F#5', freq: 739.99, display: 'F♯5' },
+        { name: 'G5', freq: 783.99, display: 'G5' }
+    ];
+
+    const LEVEL2_SCALES = [
+        { name: 'C大調', root: 'C4' },
+        { name: 'F大調', root: 'F4' },
+        { name: 'G大調', root: 'G4' },
+        { name: 'D大調', root: 'D4' },
+        { name: 'B♭大調', root: 'A#3' },
+        { name: 'A大調', root: 'A3' },
+        { name: 'E♭大調', root: 'D#4' }
+    ];
+
+    const ROOT_LIST_ALL = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const STEP_LIST = ['全', '半'];
+
+    let level1RootPool = [];
+    let level2ScalePool = [];
+
+    let currentLevel = 1;
+    let level1Combo = 0;
+    let level2Combo = 0;
+
+    let audioCtx = null;
+    let targetNotes = [];
+    let userInput = [];
+    let score = 0;
+    let combo = 0;
+    let showLabels = true;
+    let isSpinning = false;
+    let currentQuestionText = "";
+    let currentL1Params = null;
+
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function getNextLevel1Root() {
+        if (level1RootPool.length === 0) {
+            level1RootPool = shuffleArray(ROOT_LIST_ALL);
+        }
+        return level1RootPool.pop();
+    }
+
+    function getNextLevel2Scale() {
+        if (level2ScalePool.length === 0) {
+            level2ScalePool = shuffleArray(LEVEL2_SCALES);
+        }
+        return level2ScalePool.pop();
+    }
+
+    function playTone(freq, duration = 1.2) {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+
+        const mainGain = audioCtx.createGain();
+        mainGain.gain.setValueAtTime(1.0, now);
+        mainGain.connect(audioCtx.destination);
+
+        const hammerLen = 0.025;
+        const bufferSize = audioCtx.sampleRate * hammerLen;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+        const hammer = audioCtx.createBufferSource();
+        hammer.buffer = noiseBuffer;
+
+        const hammerFilter = audioCtx.createBiquadFilter();
+        hammerFilter.type = 'bandpass';
+        hammerFilter.frequency.setValueAtTime(freq * 1.5, now);
+        hammerFilter.Q.setValueAtTime(3.0, now);
+
+        const hammerGain = audioCtx.createGain();
+        hammerGain.gain.setValueAtTime(0.18, now);
+        hammerGain.gain.exponentialRampToValueAtTime(0.001, now + hammerLen);
+
+        hammer.connect(hammerFilter);
+        hammerFilter.connect(hammerGain);
+        hammerGain.connect(mainGain);
+        hammer.start(now);
+
+        const string1 = audioCtx.createOscillator();
+        const string2 = audioCtx.createOscillator();
+        
+        string1.type = 'sine';
+        string2.type = 'triangle';
+
+        string1.frequency.setValueAtTime(freq, now);
+        string2.frequency.setValueAtTime(freq, now);
+        string2.detune.setValueAtTime(4.5, now);
+
+        const stringGain = audioCtx.createGain();
+        stringGain.gain.setValueAtTime(0.65, now);
+        stringGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        string1.connect(stringGain);
+        string2.connect(stringGain);
+        stringGain.connect(mainGain);
+
+        const overtone = audioCtx.createOscillator();
+        overtone.type = 'sawtooth';
+        overtone.frequency.setValueAtTime(freq * 2, now);
+
+        const overtoneFilter = audioCtx.createBiquadFilter();
+        overtoneFilter.type = 'lowpass';
+        overtoneFilter.frequency.setValueAtTime(freq * 4, now);
+        overtoneFilter.frequency.exponentialRampToValueAtTime(freq * 0.8, now + 0.3);
+
+        const overtoneGain = audioCtx.createGain();
+        overtoneGain.gain.setValueAtTime(0.25, now);
+        overtoneGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+        overtone.connect(overtoneFilter);
+        overtoneFilter.connect(overtoneGain);
+        overtoneGain.connect(mainGain);
+
+        string1.start(now);
+        string2.start(now);
+        overtone.start(now);
+
+        string1.stop(now + duration);
+        string2.stop(now + duration);
+        overtone.stop(now + duration);
+    }
+
+    function initKeyboard() {
+        const kb = document.getElementById('keyboard');
+        if (!kb) return;
+        kb.innerHTML = '';
+
+        if (currentLevel === 1) {
+            kb.className = 'keyboard';
+            const whiteKeys = WHITE_KEYS_L1;
+            const blackKeys = BLACK_KEYS_L1;
+            const totalWhite = 10;
+            const unitWidth = 100 / totalWhite;
+
+            whiteKeys.forEach(w => {
+                const el = document.createElement('div');
+                el.className = 'white-key';
+                el.dataset.name = w.name;
+                el.innerHTML = `<span class="key-text">${w.label}</span>`;
+                el.onpointerdown = (e) => {
+                    e.preventDefault();
+                    handleNotePress(w.name, w.freq, el);
+                };
+                kb.appendChild(el);
+            });
+
+            blackKeys.forEach(b => {
+                const el = document.createElement('div');
+                el.className = 'black-key';
+                el.dataset.name = b.name;
+                el.style.width = '6.2%';
+                el.style.left = `calc(${b.stepIndex * unitWidth}% - 3.1%)`;
+                el.innerHTML = b.label;
+                el.onpointerdown = (e) => {
+                    e.preventDefault();
+                    handleNotePress(b.name, b.freq, el);
+                };
+                kb.appendChild(el);
+            });
+
+        } else {
+            kb.className = 'keyboard level2';
+            const whiteKeys = WHITE_KEYS_L2;
+            const blackKeys = BLACK_KEYS_L2;
+            const totalWhite = 14;
+            const unitWidth = 100 / totalWhite;
+
+            whiteKeys.forEach(w => {
+                const el = document.createElement('div');
+                el.className = 'white-key';
+                el.dataset.name = w.name;
+                el.innerHTML = `<span class="key-text">${w.label}</span>`;
+                el.onpointerdown = (e) => {
+                    e.preventDefault();
+                    handleNotePress(w.name, w.freq, el);
+                };
+                kb.appendChild(el);
+            });
+
+            blackKeys.forEach(b => {
+                const el = document.createElement('div');
+                el.className = 'black-key';
+                el.dataset.name = b.name;
+                el.style.width = '4.4%';
+                el.style.left = `calc(${b.stepIndex * unitWidth}% - 2.2%)`;
+                el.innerHTML = b.label;
+                el.onpointerdown = (e) => {
+                    e.preventDefault();
+                    handleNotePress(b.name, b.freq, el);
+                };
+                kb.appendChild(el);
+            });
+
+            const dummyLeft = document.createElement('div');
+            dummyLeft.className = 'dummy-key-left';
+            dummyLeft.style.width = '2.2%';
+            kb.appendChild(dummyLeft);
+
+            const dummyRight = document.createElement('div');
+            dummyRight.className = 'dummy-key-right';
+            dummyRight.style.width = '2.2%';
+            kb.appendChild(dummyRight);
+        }
+
+        renderPills();
+    }
+
+    function renderPills() {
+        const container = document.getElementById('pillContainer');
+        container.innerHTML = '';
+        const maxLen = currentLevel === 1 ? 4 : 8;
+
+        for (let i = 1; i <= maxLen; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'pill-wrapper';
+
+            const mark = document.createElement('div');
+            mark.className = 'pill-mark';
+            mark.id = `pm${i}`;
+            mark.innerText = '';
+
+            const pill = document.createElement('div');
+            pill.className = 'pill empty';
+            pill.id = `p${i}`;
+            pill.innerText = '-';
+
+            wrapper.appendChild(mark);
+            wrapper.appendChild(pill);
+            container.appendChild(wrapper);
+        }
+    }
+
+    function handleNotePress(name, freq, el) {
+        playTone(freq);
+        el.classList.add('active');
+        setTimeout(() => el.classList.remove('active'), 200);
+
+        const maxLen = currentLevel === 1 ? 4 : 8;
+        if ((!currentL1Params && targetNotes.length === 0) || userInput.length >= maxLen) return;
+
+        if (currentLevel === 1 && userInput.length === 0) {
+            updateL1TargetFromFirstNote(name);
+        }
+
+        userInput.push(name);
+        updateProgressUI();
+
+        if (userInput.length === maxLen) {
+            checkAnswer();
+        }
+    }
+
+    function updateL1TargetFromFirstNote(firstNoteName) {
+        if (!currentL1Params) return;
+        const { rootLetter, s1, s2, s3 } = currentL1Params;
+
+        if (firstNoteName.startsWith(rootLetter)) {
+            let startIdx = ALL_NOTES.findIndex(n => n.name === firstNoteName);
+            if (startIdx !== -1) {
+                const idx1 = startIdx;
+                const idx2 = idx1 + (s1 === '全' ? 2 : 1);
+                const idx3 = idx2 + (s2 === '全' ? 2 : 1);
+                const idx4 = idx3 + (s3 === '全' ? 2 : 1);
+
+                targetNotes = [
+                    ALL_NOTES[idx1] ? ALL_NOTES[idx1].name : firstNoteName,
+                    ALL_NOTES[idx2] ? ALL_NOTES[idx2].name : 'C4',
+                    ALL_NOTES[idx3] ? ALL_NOTES[idx3].name : 'C4',
+                    ALL_NOTES[idx4] ? ALL_NOTES[idx4].name : 'C4'
+                ];
+            }
+        }
+    }
+
+    function updateProgressUI() {
+        const maxLen = currentLevel === 1 ? 4 : 8;
+        for (let i = 1; i <= maxLen; i++) {
+            const pill = document.getElementById(`p${i}`);
+            const mark = document.getElementById(`pm${i}`);
+
+            if (pill) {
+                const userVal = userInput[i - 1];
+                if (userVal) {
+                    const noteObj = ALL_NOTES.find(n => n.name === userVal);
+                    pill.innerText = noteObj ? noteObj.display : '♪';
+                    pill.classList.remove('empty');
+
+                    const isCorrect = userVal === targetNotes[i - 1];
+                    if (isCorrect) {
+                        pill.classList.add('correct');
+                        pill.classList.remove('incorrect');
+                        if (mark) {
+                            mark.innerText = 'O';
+                            mark.className = 'pill-mark correct';
+                        }
+                    } else {
+                        pill.classList.add('incorrect');
+                        pill.classList.remove('correct');
+                        if (mark) {
+                            mark.innerText = 'X';
+                            mark.className = 'pill-mark incorrect';
+                        }
+                    }
+                } else {
+                    pill.innerText = '-';
+                    pill.className = 'pill empty';
+                    if (mark) {
+                        mark.innerText = '';
+                        mark.className = 'pill-mark';
+                    }
+                }
+            }
+        }
+    }
+
+    function spinSlot() {
+        if (isSpinning) return;
+        isSpinning = true;
+
+        const statusEl = document.getElementById('statusText');
+        statusEl.classList.remove('bounce');
+
+        if (currentLevel === 1) {
+            spinLevel1();
+        } else {
+            spinLevel2();
+        }
+    }
+
+    function spinLevel1() {
+        const slots = [
+            document.getElementById('s1'),
+            document.getElementById('s2'),
+            document.getElementById('s3'),
+            document.getElementById('s4')
+        ];
+
+        slots.forEach(slot => slot.classList.add('spinning'));
+
+        const r = getNextLevel1Root();
+        const s1 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+        const s2 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+        const s3 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+
+        let count = 0;
+        const timer = setInterval(() => {
+            slots[0].innerText = ROOT_LIST_ALL[Math.floor(Math.random() * ROOT_LIST_ALL.length)];
+            slots[1].innerText = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+            slots[2].innerText = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+            slots[3].innerText = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+            count++;
+
+            if (count > 12) {
+                clearInterval(timer);
+                slots[0].innerText = r;
+                slots[1].innerText = s1;
+                slots[2].innerText = s2;
+                slots[3].innerText = s3;
+
+                slots.forEach(slot => slot.classList.remove('spinning'));
+
+                currentL1Params = { rootLetter: r, s1, s2, s3 };
+                calcLevel1AnswerDefault(r, s1, s2, s3);
+                clearInput();
+                document.getElementById('statusText').innerText = "請在鍵盤上按順序彈奏 4 個音";
+                document.getElementById('statusText').style.color = "#38bdf8";
+                isSpinning = false;
+            }
+        }, 60);
+    }
+
+    function spinLevel2() {
+        const slot = document.getElementById('sLevel2');
+        slot.classList.add('spinning');
+
+        const chosen = getNextLevel2Scale();
+
+        let count = 0;
+        const timer = setInterval(() => {
+            slot.innerText = LEVEL2_SCALES[Math.floor(Math.random() * LEVEL2_SCALES.length)].name;
+            count++;
+
+            if (count > 12) {
+                clearInterval(timer);
+                slot.innerText = chosen.name;
+                slot.classList.remove('spinning');
+
+                currentL1Params = null;
+                calcLevel2Answer(chosen);
+                clearInput();
+
+                const rootName = chosen.name.replace('大調', '');
+                currentQuestionText = `請以 ${rootName} 音開始，彈奏 ${chosen.name}音階，<br>音程排列依序為：<span class="whole-step">全</span><span class="whole-step">全</span><span class="half-step">半</span><span class="whole-step">全</span><span class="whole-step">全</span><span class="whole-step">全</span><span class="half-step">半</span>`;
+                
+                const statusEl = document.getElementById('statusText');
+                statusEl.innerHTML = currentQuestionText;
+                statusEl.style.color = "#38bdf8";
+
+                isSpinning = false;
+            }
+        }, 60);
+    }
+
+    function calcLevel1AnswerDefault(r, s1, s2, s3) {
+        let rootIdx = ALL_NOTES.findIndex(n => n.name.startsWith(r) && n.name.includes('4'));
+        if (rootIdx === -1) rootIdx = 3;
+
+        const idx1 = rootIdx;
+        const idx2 = idx1 + (s1 === '全' ? 2 : 1);
+        const idx3 = idx2 + (s2 === '全' ? 2 : 1);
+        const idx4 = idx3 + (s3 === '全' ? 2 : 1);
+
+        targetNotes = [
+            ALL_NOTES[idx1] ? ALL_NOTES[idx1].name : 'C4',
+            ALL_NOTES[idx2] ? ALL_NOTES[idx2].name : 'C4',
+            ALL_NOTES[idx3] ? ALL_NOTES[idx3].name : 'C4',
+            ALL_NOTES[idx4] ? ALL_NOTES[idx4].name : 'C4'
+        ];
+    }
+
+    function calcLevel2Answer(scaleObj) {
+        let rootIdx = ALL_NOTES.findIndex(n => n.name === scaleObj.root);
+        if (rootIdx === -1) rootIdx = 3;
+
+        const intervals = [0, 2, 2, 1, 2, 2, 2, 1];
+        targetNotes = [];
+
+        let currentIdx = rootIdx;
+        for (let i = 0; i < intervals.length; i++) {
+            currentIdx += intervals[i];
+            if (ALL_NOTES[currentIdx]) {
+                targetNotes.push(ALL_NOTES[currentIdx].name);
+            }
+        }
+    }
+
+    function checkAnswer() {
+        const isRight = userInput.every((val, idx) => val === targetNotes[idx]);
+        const statusEl = document.getElementById('statusText');
+
+        if (isRight) {
+            score += 100 + combo * 20;
+            combo++;
+            document.getElementById('score').innerText = score;
+            document.getElementById('combo').innerText = combo;
+            
+            statusEl.innerText = "🎉 完全正確！太棒了！請點按下一題～";
+            statusEl.classList.add('bounce');
+
+            if (currentLevel === 1) {
+                level1Combo++;
+                if (level1Combo >= 5) {
+                    setTimeout(() => {
+                        showModal("🎉 恭喜通關第一關！", "你已連續答對 5 題！準備好進入第二關的大調音階挑戰了嗎？", "進入第二關 ➔", switchLevel2);
+                    }, 800);
+                }
+            } else {
+                level2Combo++;
+                if (level2Combo >= 3) {
+                    setTimeout(() => {
+                        showModal(
+                            "👑 鍵盤之王！", 
+                            "恭喜你，成為了鍵盤之王！成功挑戰全部大調音階！<br><span style='color: #fbbf24; font-weight: 800;'>請舉手通知老師登記加分！</span>", 
+                            "重新體驗 ➔", 
+                            resetGame
+                        );
+                    }, 800);
+                }
+            }
+        } else {
+            combo = 0;
+            if (currentLevel === 1) level1Combo = 0;
+            else level2Combo = 0;
+
+            document.getElementById('combo').innerText = combo;
+            statusEl.classList.remove('bounce');
+            statusEl.innerText = "❌ 答錯囉！請再試一次";
+            statusEl.style.color = "#f87171";
+            setTimeout(() => clearInput(), 1200);
+        }
+    }
+
+    function clearInput() {
+        userInput = [];
+        updateProgressUI();
+        const statusEl = document.getElementById('statusText');
+        if (targetNotes.length > 0 && !statusEl.classList.contains('bounce')) {
+            if (currentLevel === 1) {
+                statusEl.innerText = "請在鍵盤上按順序彈奏 4 個音";
+            } else {
+                statusEl.innerHTML = currentQuestionText;
+            }
+            statusEl.style.color = "#38bdf8";
+        }
+    }
+
+    function showModal(title, sub, btnText, callback) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalSub').innerHTML = sub;
+        document.getElementById('modalBtn').innerText = btnText;
+        document.getElementById('modalOverlay').classList.add('active');
+        window.currentModalCallback = callback;
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        if (window.currentModalCallback) {
+            window.currentModalCallback();
+            window.currentModalCallback = null;
+        }
+    }
+
+    function switchLevel2() {
+        currentLevel = 2;
+        currentL1Params = null;
+        document.getElementById('gameTitle').innerText = "鍵盤音程練習：大調音階 (第二關)";
+        document.getElementById('gameSubtitle').innerText = "掌握全全半全全全半，成為鍵盤大師！";
+
+        const slotGrid = document.getElementById('slotGrid');
+        slotGrid.className = "slot-grid-level2";
+        slotGrid.innerHTML = `
+            <div class="slot-item">
+                <span class="slot-tag">題目大調</span>
+                <div class="slot-box" id="sLevel2" style="max-width: 280px;">-</div>
+            </div>
+        `;
+
+        initKeyboard();
+        targetNotes = [];
+        userInput = [];
+        document.getElementById('statusText').innerText = "請點選「點我出題」開始第二關！";
+    }
+
+    function resetGame() {
+        currentLevel = 1;
+        level1Combo = 0;
+        level2Combo = 0;
+        level1RootPool = [];
+        level2ScalePool = [];
+        currentL1Params = null;
+        score = 0;
+        combo = 0;
+        document.getElementById('score').innerText = score;
+        document.getElementById('combo').innerText = combo;
+
+        document.getElementById('gameTitle').innerText = "鍵盤音程練習：全音與半音 (第一關)";
+        document.getElementById('gameSubtitle').innerText = "全全半全全全半老師你在念經喔?";
+
+        const slotGrid = document.getElementById('slotGrid');
+        slotGrid.className = "slot-grid-level1";
+        slotGrid.innerHTML = `
+            <div class="slot-item">
+                <span class="slot-tag">第 1 音</span>
+                <div class="slot-box" id="s1">-</div>
+            </div>
+            <div class="slot-item">
+                <span class="slot-tag">第 2 音</span>
+                <div class="slot-box" id="s2">-</div>
+            </div>
+            <div class="slot-item">
+                <span class="slot-tag">第 3 音</span>
+                <div class="slot-box" id="s3">-</div>
+            </div>
+            <div class="slot-item">
+                <span class="slot-tag">第 4 音</span>
+                <div class="slot-box" id="s4">-</div>
+            </div>
+        `;
+
+        initKeyboard();
+        targetNotes = [];
+        userInput = [];
+        document.getElementById('statusText').innerText = "請先點選「點我出題」";
+    }
+
+    function playDemo() {
+        if (targetNotes.length === 0) return;
+        targetNotes.forEach((name, i) => {
+            const noteObj = ALL_NOTES.find(n => n.name === name);
+            if (noteObj) {
+                setTimeout(() => {
+                    playTone(noteObj.freq, 1.2);
+                }, i * 420);
+            }
+        });
+    }
+
+    function toggleNotes() {
+        showLabels = !showLabels;
+        const card = document.getElementById('gameCard');
+        const btn = document.getElementById('toggleBtn');
+        if (showLabels) {
+            card.classList.remove('hide-notes');
+            btn.innerText = '隱藏音名';
+        } else {
+            card.classList.add('hide-notes');
+            btn.innerText = '顯示音名';
+        }
+    }
+
+    initKeyboard();
+</script>
+</body>
+</html>
