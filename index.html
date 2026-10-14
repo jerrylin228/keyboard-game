@@ -745,8 +745,8 @@
     let level2ScalePool = [];
 
     let currentLevel = 1;
-    let level1Combo = 0; // 第一關連續答對題數 (目標 5 題)
-    let level2Combo = 0; // 第二關連續答對題數 (目標 5 題)
+    let level1Combo = 0; // 第一關連續答對題數
+    let level2Combo = 0; // 第二關連續答對題數
 
     let audioCtx = null;
     let targetNotes = [];
@@ -1092,9 +1092,14 @@
         slots.forEach(slot => slot.classList.add('spinning'));
 
         const r = getNextLevel1Root();
-        const s1 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
-        const s2 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
-        const s3 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+        let s1 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+        let s2 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+        let s3 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
+
+        // 避免出現「B、全、全、全」導致超出第一關鍵盤音域 (C4~E5)
+        if (r === 'B' && s1 === '全' && s2 === '全' && s3 === '全') {
+            s3 = '半';
+        }
 
         let count = 0;
         const timer = setInterval(() => {
