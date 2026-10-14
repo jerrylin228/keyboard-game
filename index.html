@@ -370,13 +370,14 @@
             white-space: nowrap;
         }
 
-        /* 鋼琴鍵盤區 */
+        /* 鋼琴鍵盤區 - 支持行動裝置順暢橫向滾動 */
         .keyboard-wrapper {
             background: #172033;
             border-radius: 16px;
             padding: 16px 12px 12px 12px;
             border: 1px solid #23314d;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .keyboard {
@@ -389,7 +390,7 @@
         }
 
         .keyboard.level2 {
-            min-width: 850px;
+            min-width: 960px; /* 確保手機橫向有足夠寬度流暢滑動 */
         }
 
         .white-key, .black-key {
@@ -561,6 +562,9 @@
         @media (max-width: 768px) {
             .middle-section {
                 grid-template-columns: 1fr;
+            }
+            .keyboard {
+                height: 170px;
             }
         }
     </style>
@@ -745,8 +749,8 @@
     let level2ScalePool = [];
 
     let currentLevel = 1;
-    let level1Combo = 0; // 第一關連續答對題數
-    let level2Combo = 0; // 第二關連續答對題數
+    let level1Combo = 0;
+    let level2Combo = 0;
 
     let audioCtx = null;
     let targetNotes = [];
@@ -1018,7 +1022,7 @@
     function updateProgressUI() {
         const maxLen = currentLevel === 1 ? 4 : 8;
         const currentComboCount = (currentLevel === 1) ? level1Combo : level2Combo;
-        const isBlindMode = currentComboCount >= 3; // 第 4、5 題 (已連對 3 題以上) 啟用盲測模式
+        const isBlindMode = currentComboCount >= 3;
 
         for (let i = 1; i <= maxLen; i++) {
             const pill = document.getElementById(`p${i}`);
@@ -1032,14 +1036,12 @@
                     pill.classList.remove('empty');
 
                     if (isBlindMode) {
-                        // 第 4-5 題：灰色方框，上方顯示 ?
                         pill.className = 'pill blind';
                         if (mark) {
                             mark.innerText = '?';
                             mark.className = 'pill-mark blind';
                         }
                     } else {
-                        // 前 3 題：即時判定 O / X 與綠/紅框
                         const isCorrect = userVal === targetNotes[i - 1];
                         if (isCorrect) {
                             pill.className = 'pill correct';
@@ -1096,7 +1098,6 @@
         let s2 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
         let s3 = STEP_LIST[Math.floor(Math.random() * STEP_LIST.length)];
 
-        // 避免出現「B、全、全、全」導致超出第一關鍵盤音域 (C4~E5)
         if (r === 'B' && s1 === '全' && s2 === '全' && s3 === '全') {
             s3 = '半';
         }
@@ -1201,7 +1202,6 @@
         const statusEl = document.getElementById('statusText');
         const maxLen = currentLevel === 1 ? 4 : 8;
 
-        // 若為第 4、5 題，提交答案時進行最終真實的 O / X 與紅綠框呈現
         for (let i = 1; i <= maxLen; i++) {
             const pill = document.getElementById(`p${i}`);
             const mark = document.getElementById(`pm${i}`);
